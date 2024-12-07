@@ -1,4 +1,3 @@
-# unit_test.py
 import torch
 import numpy as np
 from goat_run import move_goats
