@@ -123,3 +123,5 @@ goat_simulation.gif:
 
 A visualization showing each goat's path exiting the pen, animated over time.
 To analyze movement patterns or debug behavior, inspect these visualizations.
+
+I apologize. The formatting got out of whack. You were supposed to only be able to copy lines of code that would be needed to do things but then this whole last section became that way and now the readme file corrupts or looks awful when i try to fix this part that got messed up.
