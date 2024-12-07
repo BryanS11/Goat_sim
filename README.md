@@ -59,8 +59,7 @@ Follow these steps to set up the simulation environment and dependencies.
 First, clone the project repository:
 
 ```bash
-git clone https://github.com/yourusername/goat-simulation.git
-cd goat-simulation
+git clone (the repository that this readme is)
 2️⃣ Set Up the Environment
 You can set up dependencies in two ways:
 
@@ -68,7 +67,6 @@ Option 1: Conda Environment
 If you use Conda, set up the environment using the provided environment.yml:
 
 bash
-Copy code
 conda env create -f environment.yml
 conda activate goat-env
 
@@ -76,26 +74,22 @@ Option 2: Manually Install Dependencies
 If you don't use Conda, manually install the required libraries:
 
 bash
-Copy code
 pip install torch numpy matplotlib pytest
 3️⃣ Verify GPU Support
 Run the following to ensure GPU support is enabled:
 
 python
-Copy code
 import torch
 print(torch.cuda.is_available())  # Should return True if CUDA is configured properly.
 🏃 How to Run the Simulation
 After setting up the environment and dependencies, execute the simulation script:
 
 bash
-Copy code
-python main.py
+python goat_run.py
 📊 During Execution:
 You will be prompted with:
 
-css
-Copy code
+
 Enter grid size (5 to 100):
 Here, enter an integer value between 5 and 100 to set the 2D simulation environment grid size.
 
@@ -110,13 +104,11 @@ To ensure everything is running correctly, use the testing framework pytest.
 
 1️⃣ Install pytest:
 bash
-Copy code
 pip install pytest
 2️⃣ Run Tests:
 Run the following to execute all unit and integration tests:
 
 bash
-Copy code
 pytest
 ✅ Tests validate:
 Unit Tests: Test the logic behind goat movement.
