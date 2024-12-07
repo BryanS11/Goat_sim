@@ -1,9 +1,35 @@
+# ------------------------------------------------------------------------------
+# Module-level documentation
+# ------------------------------------------------------------------------------
+
+"""
+goat_simulation.py
+
+This script simulates a goat AI behavior in a 2D pen environment where goats attempt
+to exit the pen by navigating toward a randomly placed exit point. The simulation uses
+GPU acceleration (via PyTorch) to simulate goat movements in parallel. The simulation
+logs goat movement data and creates a visualization at the end of the simulation.
+
+Dependencies:
+- PyTorch (GPU acceleration support)
+- Numpy
+- Matplotlib (for visualization)
+
+The script performs the following:
+1. Initializes a random pen with randomly placed goats.
+2. Simulates goat movement toward an exit point until all goats exit.
+3. Logs goat movements to a CSV file ('goat_movements.csv').
+4. Generates an animated simulation GIF of goat movements.
+"""
+
+
 import torch
 import numpy as np
 import csv
 import random
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+
 
 # User input for scalable grid size
 GRID_SIZE = int(input("Enter grid size (5 to 100): "))
@@ -34,8 +60,22 @@ exited_flags = torch.zeros(NUM_GOATS, dtype=torch.int32, device="cuda")
 # Movement log
 movement_log = {goat_id: [] for goat_id in range(NUM_GOATS)}
 
-# Function for goat movement in parallel
+
+# ------------------------------------------------------------------------------
+# Function Definitions
+# ------------------------------------------------------------------------------
+
 def move_goats(grid, goat_positions_tensor, exited_flags, exit_row, exit_col):
+    """
+    Simulates the movement of goats toward the exit in parallel using GPU acceleration.
+    
+    Args:
+        grid (torch.Tensor): The 2D simulation grid representing the environment.
+        goat_positions_tensor (torch.Tensor): Tensor containing the positions of goats.
+        exited_flags (torch.Tensor): A tensor to track if a goat has exited.
+        exit_row (int): The row index of the exit point.
+        exit_col (int): The column index of the exit point.
+    """
     directions = torch.randint(0, 4, (NUM_GOATS,), device="cuda")  # Random directions for all goats
 
     # Get current positions
@@ -65,35 +105,17 @@ def move_goats(grid, goat_positions_tensor, exited_flags, exit_row, exit_col):
                 grid[new_x_pos[idx].item(), new_y_pos[idx].item()] = 1
                 goat_positions_tensor[idx] = torch.tensor([new_x_pos[idx].item(), new_y_pos[idx].item()], device="cuda")
 
-# Run simulation
-iteration = 0
-while exited_flags.sum().item() < NUM_GOATS:
-    for i in range(NUM_GOATS):
-        if exited_flags[i] == 0:
-            x, y = goat_positions_tensor[i].tolist()
-            movement_log[i].append((x, y))
 
-    move_goats(grid, goat_positions_tensor, exited_flags, exit_row, exit_col)
-
-    iteration += 1
-
-# Finalize movement log for exited goats
-for i in range(NUM_GOATS):
-    if exited_flags[i] == 1:
-        movement_log[i].append((-1, -1))
-
-# Save movement log to CSV
-with open("goat_movements.csv", "w", newline="") as csvfile:
-    writer = csv.writer(csvfile)
-    for goat_id, movements in movement_log.items():
-        row = [goat_id] + [f"{x},{y}" for x, y in movements]
-        writer.writerow(row)
-
-print(f"Simulation completed in {iteration} iterations.")
-print("Movement log saved to 'goat_movements.csv'.")
-
-# Visualization functions
 def load_movement_log(filename):
+    """
+    Loads the goat movement log from a CSV file.
+    
+    Args:
+        filename (str): Path to the movement log CSV file.
+    
+    Returns:
+        dict: A dictionary containing goat IDs as keys and movement paths as values.
+    """
     movement_log = {}
     with open(filename, "r") as f:
         reader = csv.reader(f)
@@ -103,7 +125,17 @@ def load_movement_log(filename):
             movement_log[goat_id] = movements
     return movement_log
 
+
 def visualize_movements(grid_size, movement_log, exit_position, output_file="goat_simulation.gif"):
+    """
+    Creates and saves a visualization of goat movement paths using matplotlib.
+    
+    Args:
+        grid_size (int): Size of the simulation grid.
+        movement_log (dict): Dictionary containing goat movement logs.
+        exit_position (tuple): Coordinates of the exit point in the simulation.
+        output_file (str): Output path to save the generated simulation visualization.
+    """
     fig, ax = plt.subplots(figsize=(6, 6))
     ax.set_xlim(-0.5, grid_size - 0.5)
     ax.set_ylim(-0.5, grid_size - 0.5)
@@ -112,14 +144,13 @@ def visualize_movements(grid_size, movement_log, exit_position, output_file="goa
     ax.grid(color="gray", linestyle="--", linewidth=0.5)
     ax.set_title("Goat Simulation")
 
-    # Initialize scatter plot for goats and exit
     goats_plot = ax.scatter([], [], color="blue", label="Goats")
     exit_marker = ax.scatter([exit_position[1]], [grid_size - exit_position[0] - 1], color="red", label="Exit")
 
     max_frames = max(len(movements) for movements in movement_log.values())
 
     def init():
-        goats_plot.set_offsets(np.empty((0, 2)))  # Ensure it starts as an empty 2D array
+        goats_plot.set_offsets(np.empty((0, 2)))
         return goats_plot,
 
     def update(frame):
@@ -144,7 +175,8 @@ def visualize_movements(grid_size, movement_log, exit_position, output_file="goa
 
     plt.close(fig)
 
-# Generate visualization
+
+# Run simulation
 print("Generating visualization...")
 movement_log = load_movement_log("goat_movements.csv")
 visualize_movements(GRID_SIZE, movement_log, (exit_row, exit_col))
